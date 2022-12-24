@@ -1,5 +1,21 @@
+const mongoose = require('mongoose');
 const app = require('./app')
 
-app.listen(3000, () => {
-  console.log("Server running. Use our API on port: 3000")
+const adress = 'mongodb+srv://Retyzza:XcL8KB9QgdCaosQ5@cluster0.dwcxue9.mongodb.net/?retryWrites=true&w=majority'
+
+mongoose.connect(adress, {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useUnifiedTopology: true,
+  promiseLibrary: global.Promise,
 })
+  .then(() => {
+    app.listen(3000, function () {
+      console.log('Database connection successful');
+    });
+  })
+  .catch(err => {
+    console.log(`Server not running. Error message: ${err.message}`);
+    process.exit(1)
+  }
+  );
