@@ -1,14 +1,10 @@
 const mongoose = require('mongoose');
 const app = require('./app')
+const DB_HOST = require('./config')
 
-const adress = 'mongodb+srv://Retyzza:XcL8KB9QgdCaosQ5@cluster0.dwcxue9.mongodb.net/?retryWrites=true&w=majority'
+mongoose.set('strictQuery', true)
 
-mongoose.connect(adress, {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useUnifiedTopology: true,
-  promiseLibrary: global.Promise,
-})
+mongoose.connect(DB_HOST)
   .then(() => {
     app.listen(3000, function () {
       console.log('Database connection successful');

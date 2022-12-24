@@ -7,7 +7,7 @@ const get = async (req, res, next) => {
             res.json(
                 { message: 'Success', code: 200, data: contacts })
         } else {
-            throw new Error()
+            res.status(404).json({ message: 'Not found' })
         }
 
     } catch (err) {
@@ -22,7 +22,7 @@ const getById = async (req, res, next) => {
         const contactById = await contactFuncs.getContactById(contactId)
         if (contactById) {
             res.json({ message: 'Success', code: 200, data: contactById })
-        } else { throw new Error("Not found") }
+        } else { res.status(404).json({ message: 'Not found' }) }
     } catch (err) {
         console.log(err)
         next(err)
@@ -56,7 +56,7 @@ const remove = async (req, res, next) => {
         if (deletedContact) {
             res.json({ message: 'Contact deleted', code: 200, data: deletedContact })
         } else {
-            throw new Error("Not found")
+            res.status(404).json({ message: 'Not found' })
         }
     } catch (err) {
         console.log(err)
@@ -78,7 +78,7 @@ const edit = async (req, res, next) => {
             res.json({ message: 'Contact updated', code: 200, data: updatedContact })
         } else if (updatedContact.valid === null) {
             res.status(400).json({ message: 'Unvalid field', code: 400 })
-        } else { throw new Error("Not found") }
+        } else { res.status(404).json({ message: 'Not found' }) }
     } catch (err) {
         console.log(err)
         next(err)
@@ -89,16 +89,16 @@ const updateStatus = async (req, res, next) => {
     try {
         const { contactId } = req.params
         const { favorite } = req.body;
-        if (favorite === undefined) {
+        if (!favorite) {
             res.status(400).json({ message: 'Missing field favorite', code: 400 });
             return
         }
 
         const updatedStatus = await contactFuncs.updateContactStatus(contactId, favorite)
         if (updateStatus) {
-            res.json({ message: 'Contact updated', code: 200, data: updatedStatus })
+            res.json({ message: 'Status updated', code: 200, data: updatedStatus })
         } else {
-            throw new Error('Not found')
+            res.status(404).json({ message: 'Not found' })
         }
     } catch (err) {
         console.log(err)
