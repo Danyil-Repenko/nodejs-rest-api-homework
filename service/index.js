@@ -28,9 +28,11 @@ const schema = Joi.object({
     phone: Joi.string()
         .pattern(new RegExp(phonePatern))
         .allow(''),
+    favorite: Joi.bool()
 })
 
 const addContact = async (fields) => {
+    console.log(fields)
     const validatedValues = schema.validate(fields)
     if (validatedValues.error) return { valid: null }
     return Contact.create(fields)

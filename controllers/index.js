@@ -31,12 +31,12 @@ const getById = async (req, res, next) => {
 
 const create = async (req, res, next) => {
     try {
-        const { name, email, phone } = req.body
+        const { name, email, phone, favorite } = req.body
         if (name === undefined || email === undefined || phone === undefined) {
             res.status(400).json({ message: 'Missing required field', code: 400 })
             return
         }
-        const newContact = await contactFuncs.addContact({ email, name, phone })
+        const newContact = await contactFuncs.addContact({ email, name, phone, favorite })
         if (newContact.valid === null) {
             res.status(400).json({ message: 'Unvalid field', code: 400 })
         } else {
