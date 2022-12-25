@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const Contact = require('../service/shemas/contact')
+const Contact = require('../shemas/contact')
 
 const listContacts = async () => {
     return Contact.find()

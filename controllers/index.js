@@ -12,7 +12,6 @@ const get = async (req, res, next) => {
 
     } catch (err) {
         console.log(err)
-        next(err)
     }
 }
 
@@ -25,7 +24,6 @@ const getById = async (req, res, next) => {
         } else { res.status(404).json({ message: 'Not found' }) }
     } catch (err) {
         console.log(err)
-        next(err)
     }
 }
 
@@ -44,7 +42,6 @@ const create = async (req, res, next) => {
         }
     } catch (err) {
         console.log(err)
-        next(err)
     }
 }
 
@@ -60,7 +57,6 @@ const remove = async (req, res, next) => {
         }
     } catch (err) {
         console.log(err)
-        next(err)
     }
 }
 
@@ -81,7 +77,6 @@ const edit = async (req, res, next) => {
         } else { res.status(404).json({ message: 'Not found' }) }
     } catch (err) {
         console.log(err)
-        next(err)
     }
 }
 
@@ -102,7 +97,6 @@ const updateStatus = async (req, res, next) => {
         }
     } catch (err) {
         console.log(err)
-        next(err)
     }
 }
 
