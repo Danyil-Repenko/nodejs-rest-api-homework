@@ -1,5 +1,5 @@
 const express = require('express')
-const controllers = require('../controllers')
+const controllers = require('../../controllers')
 
 const router = express.Router()
 
@@ -12,5 +12,7 @@ router.post('/', controllers.create)
 router.delete('/:contactId', controllers.remove)
 
 router.put('/:contactId', controllers.edit)
+
+router.patch('/:contactId/favorite', controllers.updateStatus)
 
 module.exports = router
