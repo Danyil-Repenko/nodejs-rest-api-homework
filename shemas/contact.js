@@ -1,28 +1,30 @@
+/* eslint-disable no-useless-escape */
 const mongoose = require('mongoose');
 const Joi = require('joi');
+const { mongooseServerError } = require('../heplers')
 
-const nameRegExp =
-    /[a - zA - Zа - яА - Я] + (([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/;
-const emailRegExp = /^ ([a - zA - Z0 -9_ -\\.] +)@((\\[[0 - 9]{ 1, 3}\\.[0 - 9]{ 1, 3}\\.[0 - 9]{ 1, 3}\\.)| (([a - zA - Z0 - 9\\-] +\\.) +)) ([a - zA - Z]{ 2, 4} | [0 - 9]{ 1, 3}) (\\] ?) $/;
-const phoneRegExp =
-    /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+const namePatern =
+    /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/;
+const emailPatern = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+const phonePatern =
+    /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
 
 const contactsSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Set name for contact'],
-        match: nameRegExp
+        match: namePatern
     },
     email: {
         type: String,
         unique: true,
         required: [true, 'Set email for contact'],
-        match: emailRegExp
+        match: emailPatern
     },
     phone: {
         type: String,
         required: [true, 'Set phone for contact'],
-        match: phoneRegExp
+        match: phonePatern
     },
     favorite: {
         type: Boolean,
@@ -36,26 +38,28 @@ const contactsSchema = new mongoose.Schema({
     versionKey: false
 })
 
+contactsSchema.post('save', mongooseServerError)
+
 const addSchema = Joi.object({
     name: Joi.string()
-        .pattern(nameRegExp)
+        .pattern(namePatern)
         .required(),
     email: Joi.string()
-        .pattern(emailRegExp)
+        .pattern(emailPatern)
         .required(),
     phone: Joi.string()
-        .pattern(phoneRegExp)
+        .pattern(phonePatern)
         .required(),
-    favorite: Joi.bool(),
+    favorite: Joi.bool().default(false),
 })
 
 const updateSchema = Joi.object({
     name: Joi.string()
-        .pattern(nameRegExp),
+        .pattern(namePatern),
     email: Joi.string()
-        .pattern(emailRegExp),
+        .pattern(emailPatern),
     phone: Joi.string()
-        .pattern(phoneRegExp),
+        .pattern(phonePatern),
 })
 
 const updateStatusSchema = Joi.object({

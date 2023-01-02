@@ -30,16 +30,8 @@ const getById = async (req, res, next) => {
 const create = async (req, res, next) => {
     try {
         const { name, email, phone, favorite } = req.body
-        if (name === undefined || email === undefined || phone === undefined) {
-            res.status(400).json({ message: 'Missing required field', code: 400 })
-            return
-        }
         const newContact = await contactFuncs.addContact({ email, name, phone, favorite })
-        if (newContact.valid === null) {
-            res.status(400).json({ message: 'Unvalid field', code: 400 })
-        } else {
-            res.status(201).json({ message: 'Contact added', code: 201, data: newContact })
-        }
+        res.status(201).json({ message: 'Contact added', code: 201, data: newContact })
     } catch (err) {
         next(err)
     }
@@ -72,8 +64,6 @@ const edit = async (req, res, next) => {
 
         if (updatedContact) {
             res.json({ message: 'Contact updated', code: 200, data: updatedContact })
-        } else if (updatedContact.valid === null) {
-            res.status(400).json({ message: 'Unvalid field', code: 400 })
         } else { res.status(404).json({ message: 'Not found' }) }
     } catch (err) {
         next(err)
@@ -84,9 +74,6 @@ const updateStatus = async (req, res, next) => {
     try {
         const { contactId } = req.params
         const { favorite } = req.body;
-        if (!favorite) {
-            return res.status(400).json({ message: 'Missing field favorite', code: 400 });
-        }
 
         const updatedStatus = await contactFuncs.updateContactStatus(contactId, favorite)
         if (updateStatus) {

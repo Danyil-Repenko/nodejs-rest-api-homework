@@ -1,7 +1,9 @@
 const mongoose = require('mongoose')
 const Joi = require('joi');
+const { mongooseServerError } = require('../heplers')
 
-const emailRegExp = /^ ([a - zA - Z0 -9_ -\\.] +)@((\\[[0 - 9]{ 1, 3}\\.[0 - 9]{ 1, 3}\\.[0 - 9]{ 1, 3}\\.)| (([a - zA - Z0 - 9\\-] +\\.) +)) ([a - zA - Z]{ 2, 4} | [0 - 9]{ 1, 3}) (\\] ?) $/;
+// eslint-disable-next-line no-useless-escape
+const emailRegExp = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
 const userSchema = new mongoose.Schema({
     password: {
@@ -25,7 +27,9 @@ const userSchema = new mongoose.Schema({
     versionKey: false
 })
 
-const schema = Joi.object({
+userSchema.post('save', mongooseServerError)
+
+const addUserSchema = Joi.object({
     password: Joi.string()
         .required()
         .min(6),
@@ -33,9 +37,11 @@ const schema = Joi.object({
         .required()
         .pattern(emailRegExp),
     subscription: Joi.string().valid('starter', 'pro', 'business'),
-    token: Joi.string()
+    token: Joi.any().valid(Joi.string(), null)
 })
+
+const schemas = { addUserSchema }
 
 const User = mongoose.model('user', userSchema)
 
-module.exports = { User, schema };
+module.exports = { User, schemas };

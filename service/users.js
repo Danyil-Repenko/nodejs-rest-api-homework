@@ -1,18 +1,20 @@
 const { User } = require('../shemas/user')
+const bcrypt = require('bcryptjs');
 
-const register = (fileds) => {
-    return User.create(fileds)
+const register = async ({ email, password }) => {
+    const saltedPassword = await bcrypt.hash(password, 10)
+    return User.create({ email, password: saltedPassword })
 }
 
-const login = (fileds) => {
+const login = (fields) => {
 
 }
 
-const logout = (fileds) => {
+const logout = (fields) => {
 
 }
 
-const getCurrent = (fileds) => {
+const getCurrent = (fields) => {
 
 }
 
