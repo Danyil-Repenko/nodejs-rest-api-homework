@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const Joi = require('joi');
-const { mongooseServerError } = require('../heplers')
+const mongooseServerError = require('../helpers/mongooseServerError')
 
 // eslint-disable-next-line no-useless-escape
 const emailRegExp = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
@@ -22,7 +22,10 @@ const userSchema = new mongoose.Schema({
         enum: ["starter", "pro", "business"],
         default: "starter"
     },
-    token: String
+    token: {
+        type: String,
+        default: null
+    }
 }, {
     versionKey: false
 })
@@ -40,7 +43,16 @@ const addUserSchema = Joi.object({
     token: Joi.any().valid(Joi.string(), null)
 })
 
-const schemas = { addUserSchema }
+const loginUserSchema = Joi.object({
+    password: Joi.string()
+        .required()
+        .min(6),
+    email: Joi.string()
+        .required()
+        .pattern(emailRegExp),
+})
+
+const schemas = { addUserSchema, loginUserSchema }
 
 const User = mongoose.model('user', userSchema)
 

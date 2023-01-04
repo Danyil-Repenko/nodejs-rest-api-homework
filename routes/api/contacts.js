@@ -1,20 +1,20 @@
 const express = require('express')
 const { contactContrl } = require('../../controllers')
-const { validate } = require("../../heplers")
+const { validate, authorized } = require("../../helpers")
 const { schemas } = require('../../shemas/contact')
 
 const router = express.Router()
 
-router.get('/', contactContrl.get)
+router.get('/', authorized, contactContrl.get)
 
-router.get('/:contactId', contactContrl.getById)
+router.get('/:contactId', authorized, contactContrl.getById)
 
-router.post('/', validate(schemas.addSchema), contactContrl.create)
+router.post('/', validate(schemas.addSchema), authorized, contactContrl.create)
 
-router.delete('/:contactId', contactContrl.remove)
+router.delete('/:contactId', authorized, contactContrl.remove)
 
-router.put('/:contactId', validate(schemas.updateSchema), contactContrl.edit)
+router.put('/:contactId', validate(schemas.updateSchema), authorized, contactContrl.edit)
 
-router.patch('/:contactId/favorite', validate(schemas.updateStatusSchema), contactContrl.updateStatus)
+router.patch('/:contactId/favorite', validate(schemas.updateStatusSchema), authorized, contactContrl.updateStatus)
 
 module.exports = router

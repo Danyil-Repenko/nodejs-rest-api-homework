@@ -1,7 +1,7 @@
 /* eslint-disable no-useless-escape */
 const mongoose = require('mongoose');
 const Joi = require('joi');
-const { mongooseServerError } = require('../heplers')
+const mongooseServerError = require('../helpers/mongooseServerError')
 
 const namePatern =
     /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/;
