@@ -19,7 +19,7 @@ const authorized = async (req, res, next) => {
         const { id } = jwt.verify(token, SECRET)
         const user = await User.findById(id)
 
-        if (!user || !id) {
+        if (!user || token !== String(user.token) || !user.token) {
             return res.status(401).json({
                 message: 'Unauthorized'
 
