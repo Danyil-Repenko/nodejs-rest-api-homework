@@ -52,7 +52,11 @@ const loginUserSchema = Joi.object({
         .pattern(emailRegExp),
 })
 
-const schemas = { addUserSchema, loginUserSchema }
+const changeSubSchema = Joi.object({
+    subscription: Joi.string().required().valid('starter', 'pro', 'business'),
+})
+
+const schemas = { addUserSchema, loginUserSchema, changeSubSchema }
 
 const User = mongoose.model('user', userSchema)
 

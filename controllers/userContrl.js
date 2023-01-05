@@ -46,4 +46,60 @@ const login = async (req, res, next) => {
     }
 }
 
-module.exports = { register, login }
+const logout = async (req, res, next) => {
+    try {
+        const { _id } = req.user;
+        const logedOutOuser = await userFuncs.logout(_id)
+        if (logedOutOuser) {
+            res.status(204).json({})
+        } else {
+            res.status(401).json({
+                message: 'Unauthorized'
+            });
+        }
+
+    } catch (err) {
+        next(err)
+    }
+}
+
+const current = async (req, res, next) => {
+    try {
+        const { _id } = req.user;
+
+        const currentOuser = await userFuncs.getCurrent(_id)
+        if (currentOuser) {
+            res.json({
+                message: "Success",
+                user: {
+                    email: currentOuser.email,
+                    subscription: currentOuser.subscription
+                }
+            })
+        } else {
+            res.status(401).json({
+                message: 'Unauthorized'
+            });
+        }
+
+    } catch (err) {
+        next(err)
+    }
+}
+
+const newSub = async (req, res, next) => {
+    try {
+        const { _id } = req.user
+        const { subscription } = req.body;
+
+        const updatedSub = await userFuncs.changeSub(_id, subscription)
+        if (updatedSub) {
+            res.json({ message: 'Subscription updated', data: { subscription: updatedSub.subscription } })
+        } else {
+            res.status(404).json({ message: 'Not found' })
+        }
+    } catch (err) {
+        next(err)
+    }
+}
+module.exports = { register, login, logout, current, newSub }

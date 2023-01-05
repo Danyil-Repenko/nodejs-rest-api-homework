@@ -6,29 +6,32 @@ dotenv.config();
 const { SECRET } = process.env;
 
 const authorized = async (req, res, next) => {
-    const unauthorizedErr = res.status(401).json({
-        status: 'error',
-        code: 401,
-        message: 'Unauthorized',
-        data: 'Unauthorized',
-    });
     try {
         const { authorization = '' } = req.headers;
         const [bearer, token] = authorization.split(" ")
 
-        if (bearer !== 'Bearer') return unauthorizedErr
+        if (bearer !== 'Bearer') {
+            return res.status(401).json({
+                message: 'Unauthorized'
+            })
+        }
 
         const { id } = jwt.verify(token, SECRET)
         const user = await User.findById(id)
 
         if (!user || !id) {
-            return unauthorizedErr
+            return res.status(401).json({
+                message: 'Unauthorized'
+
+            });
         }
 
         req.user = user;
         next();
     } catch {
-        return unauthorizedErr;
+        return res.status(401).json({
+            message: 'Unauthorized'
+        });
     }
 };
 

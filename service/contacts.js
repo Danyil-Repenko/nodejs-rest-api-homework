@@ -1,7 +1,12 @@
 const { Contact } = require('../shemas/contact')
 
-const listContacts = () => {
-    return Contact.find()
+const listContacts = async (ownerId, params) => {
+    const { page = 1, limit = 5, favorite } = params
+    const skip = (page - 1) * limit
+    if (favorite === undefined) {
+        return await Contact.find({ owner: ownerId }, undefined, { skip, limit })
+    }
+    return await Contact.find({ owner: ownerId, favorite }, undefined, { skip, limit })
 }
 
 const getContactById = (contactId) => {

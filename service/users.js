@@ -7,40 +7,49 @@ dotenv.config();
 const { SECRET } = process.env;
 
 const register = async ({ email, password }) => {
-    const alreadyUser = User.findOne({ email })
-    if (!alreadyUser) {
+    const alreadyUser = await User.findOne({ email })
+    if (alreadyUser) {
         return null
     }
 
     const saltedPassword = await bcrypt.hash(password, 10)
-    return User.create({ email, password: saltedPassword })
+    return await User.create({ email, password: saltedPassword })
 }
 
-const login = ({ email, password }) => {
-    const isUser = User.findOne({ email })
-    const correctPassword = bcrypt.compare(password, isUser.password)
+const login = async ({ email, password }) => {
+    const isUser = await User.findOne({ email })
+
+    const correctPassword = await bcrypt.compare(password, isUser.password)
     if (!isUser || !correctPassword) {
         return null
     }
 
     const payload = { id: isUser._id }
-    const token = jwt.sign(payload, SECRET, { expiresIn: '3h' })
-    console.log(token)
-
-    return User.findByIdAndUpdate(isUser._id, { $set: { token } })
+    const token = jwt.sign(payload, SECRET, { expiresIn: '5h' })
+    const logedUser = await User.findByIdAndUpdate(isUser._id, { $set: { token } })
+    logedUser.token = token
+    return logedUser
 }
 
-const logout = (fields) => {
-
+const logout = async (userId) => {
+    const logedOut = await User.findByIdAndUpdate(userId, { $set: { token: null } })
+    return logedOut
 }
 
-const getCurrent = (fields) => {
+const getCurrent = async (userId) => {
+    const current = await User.findById(userId)
+    return current
+}
 
+const changeSub = async (userId, subscription) => {
+    const changedSub = await User.findByIdAndUpdate(userId, { $set: { subscription } })
+    return changedSub
 }
 
 module.exports = {
     register,
     login,
     logout,
-    getCurrent
+    getCurrent,
+    changeSub
 }

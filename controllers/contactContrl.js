@@ -2,7 +2,9 @@ const { contactFuncs } = require('../service')
 
 const get = async (req, res, next) => {
     try {
-        const contacts = await contactFuncs.listContacts()
+        const parameters = req.query
+        const { _id: owner } = req.user
+        const contacts = await contactFuncs.listContacts(owner, parameters)
         if (contacts) {
             res.json(
                 { message: 'Success', code: 200, data: contacts })
@@ -30,7 +32,8 @@ const getById = async (req, res, next) => {
 const create = async (req, res, next) => {
     try {
         const { name, email, phone, favorite } = req.body
-        const newContact = await contactFuncs.addContact({ email, name, phone, favorite })
+        const { _id: owner } = req.user
+        const newContact = await contactFuncs.addContact({ email, name, phone, favorite, owner })
         res.status(201).json({ message: 'Contact added', code: 201, data: newContact })
     } catch (err) {
         next(err)
