@@ -1,6 +1,6 @@
 const express = require('express')
 const { userContrl } = require('../../controllers')
-const { validate, authorized } = require("../../helpers")
+const { validate, authorized } = require("../../midllewares")
 const { schemas } = require('../../shemas/user')
 
 const router = express.Router()
