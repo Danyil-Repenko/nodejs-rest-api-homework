@@ -1,16 +1,34 @@
 const { userFuncs } = require('../service')
+const gravatar = require('gravatar')
+const path = require('path')
+const fs = require('fs').promises
+const Jimp = require('jimp');
 
 const register = async (req, res, next) => {
+    let avatarURL = null
     try {
         const { email, password } = req.body;
-        const newUser = await userFuncs.register({ email, password })
+
+        if (req.file === undefined) {
+            avatarURL = gravatar.url(email)
+        } else {
+            const { path: tempDir, filename } = req.file
+            console.log(tempDir, filename)
+            const publicDir = path.join(__dirname, '..', 'public', 'avatars', filename)
+            await fs.rename(tempDir, publicDir)
+            avatarURL = path.join('avatars', filename)
+        }
+        console.log(avatarURL)
+
+        const newUser = await userFuncs.register({ email, password, avatarURL })
 
         if (newUser) {
             res.status(201).json({
                 message: "User created",
                 user: {
                     email: newUser.email,
-                    subscription: newUser.subscription
+                    subscription: newUser.subscription,
+                    avatarURL: newUser.avatarURL
                 }
             })
         } else {
@@ -18,12 +36,14 @@ const register = async (req, res, next) => {
         }
 
     } catch (err) {
+        fs.unlink(avatarURL)
         next(err)
     }
 }
 
 const login = async (req, res, next) => {
     try {
+        console.log(req.body)
         const { email, password } = req.body;
 
         const loginUser = await userFuncs.login({ email, password })
@@ -102,4 +122,37 @@ const newSub = async (req, res, next) => {
         next(err)
     }
 }
-module.exports = { register, login, logout, current, newSub }
+
+const updateAvatar = async (req, res, next) => {
+    try {
+        const { _id } = req.user
+        const { path: tempDir, filename } = req.file
+        console.log(tempDir, filename)
+        if (tempDir === undefined || filename === undefined) {
+            return res.status(400).json({ message: 'Missing required file' })
+        }
+        Jimp.read(tempDir)
+            .then(image => {
+                return image
+                    .resize(250, 250)
+            })
+            .catch(err => {
+                next(err);
+            });
+        const uniqueFilename = `${_id}_${filename}`
+        const publicDir = path.join(__dirname, '..', 'public', 'avatars', uniqueFilename)
+        await fs.rename(tempDir, publicDir)
+        const avatarURL = path.join('avatars', uniqueFilename)
+        console.log(avatarURL)
+
+        const updatedAva = await userFuncs.updateAvatar(_id, avatarURL)
+        if (updatedAva) {
+            res.json({ message: 'Avatar updated', data: { avatarURL: updatedAva.avatarURL } })
+        } else {
+            res.status(404).json({ message: 'Not found' })
+        }
+    } catch (err) {
+        next(err)
+    }
+}
+module.exports = { register, login, logout, current, newSub, updateAvatar }
