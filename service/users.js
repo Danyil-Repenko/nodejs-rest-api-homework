@@ -6,14 +6,14 @@ const jwt = require('jsonwebtoken');
 dotenv.config();
 const { SECRET } = process.env;
 
-const register = async ({ email, password }) => {
+const register = async ({ email, password, avatarURL }) => {
     const alreadyUser = await User.findOne({ email })
     if (alreadyUser) {
         return null
     }
 
     const saltedPassword = await bcrypt.hash(password, 10)
-    return await User.create({ email, password: saltedPassword })
+    return await User.create({ email, password: saltedPassword, avatarURL })
 }
 
 const login = async ({ email, password }) => {
@@ -46,10 +46,16 @@ const changeSub = async (userId, subscription) => {
     return changedSub
 }
 
+const updateAvatar = async (userId, avatar) => {
+    const newAva = await User.findByIdAndUpdate(userId, { $set: { avatarURL: avatar } })
+    return newAva
+}
+
 module.exports = {
     register,
     login,
     logout,
     getCurrent,
-    changeSub
+    changeSub,
+    updateAvatar
 }
