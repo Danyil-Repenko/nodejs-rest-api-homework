@@ -3,7 +3,7 @@ const app = require('./app')
 const dotenv = require("dotenv");
 
 dotenv.config();
-// На сайті Render ніяк не вдається запустити цей бекенд - build failed
+
 const { DB_HOST } = process.env;
 
 mongoose.set('strictQuery', true)
