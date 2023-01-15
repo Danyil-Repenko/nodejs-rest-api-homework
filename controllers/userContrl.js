@@ -13,7 +13,15 @@ const register = async (req, res, next) => {
             avatarURL = gravatar.url(email)
         } else {
             const { path: tempDir, filename } = req.file
-            console.log(tempDir, filename)
+            await Jimp.read(tempDir)
+                .then(async image => {
+                    await image
+                        .resize(250, 250)
+                        .writeAsync(tempDir)
+                })
+                .catch(err => {
+                    next(err);
+                });
             const publicDir = path.join(__dirname, '..', 'public', 'avatars', filename)
             await fs.rename(tempDir, publicDir)
             avatarURL = path.join('avatars', filename)
@@ -54,7 +62,8 @@ const login = async (req, res, next) => {
                 token: loginUser.token,
                 user: {
                     email: loginUser.email,
-                    subscription: loginUser.subscription
+                    subscription: loginUser.subscription,
+                    avatarURL: loginUser.avatarURL
                 }
             })
         } else {
@@ -126,15 +135,15 @@ const newSub = async (req, res, next) => {
 const updateAvatar = async (req, res, next) => {
     try {
         const { _id } = req.user
-        const { path: tempDir, filename } = req.file
-        console.log(tempDir, filename)
-        if (tempDir === undefined || filename === undefined) {
+        if (req.file === undefined) {
             return res.status(400).json({ message: 'Missing required file' })
         }
-        Jimp.read(tempDir)
-            .then(image => {
-                return image
+        const { path: tempDir, filename } = req.file
+        await Jimp.read(tempDir)
+            .then(async image => {
+                await image
                     .resize(250, 250)
+                    .writeAsync(tempDir)
             })
             .catch(err => {
                 next(err);
@@ -143,7 +152,6 @@ const updateAvatar = async (req, res, next) => {
         const publicDir = path.join(__dirname, '..', 'public', 'avatars', uniqueFilename)
         await fs.rename(tempDir, publicDir)
         const avatarURL = path.join('avatars', uniqueFilename)
-        console.log(avatarURL)
 
         const updatedAva = await userFuncs.updateAvatar(_id, avatarURL)
         if (updatedAva) {
