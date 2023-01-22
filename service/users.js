@@ -74,7 +74,7 @@ const sendVerification = async (email) => {
         return { message: "Already verified" }
     }
     const message = {
-        to: email, subject: "Verify your email", html: `<a href="http:localhost:300/api/users/verify/${user.verificationToken}" turget="_blank">Click this link to verify</a>`
+        to: email, subject: "Verify your email", html: `<a href="http://localhost:300/api/users/verify/${user.verificationToken}" turget="_blank">Click this link to verify</a>`
     }
     await sendMail(message)
     return true

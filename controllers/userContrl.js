@@ -25,7 +25,7 @@ const register = async (req, res, next) => {
 
         if (newUser) {
             const message = {
-                to: email, subject: "Verify your email", html: `<a href="http:localhost:300/api/users/verify/${verificationToken}" turget="_blank">Click this link to verify</a>`
+                to: email, subject: "Verify your email", html: `<a href="http://localhost:300/api/users/verify/${verificationToken}" turget="_blank">Click this link to verify</a>`
             }
             await sendMail(message)
             res.status(201).json({
