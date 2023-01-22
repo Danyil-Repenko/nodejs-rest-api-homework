@@ -26,7 +26,15 @@ const userSchema = new mongoose.Schema({
     token: {
         type: String,
         default: null
-    }
+    },
+    verify: {
+        type: Boolean,
+        default: false,
+    },
+    verificationToken: {
+        type: String,
+        required: [true, 'Verify token is required'],
+    },
 }, {
     versionKey: false
 })
@@ -40,8 +48,7 @@ const addUserSchema = Joi.object({
     email: Joi.string()
         .required()
         .pattern(emailRegExp),
-    subscription: Joi.string().valid('starter', 'pro', 'business'),
-    token: Joi.any().valid(Joi.string(), null)
+    subscription: Joi.string().valid('starter', 'pro', 'business')
 })
 
 const loginUserSchema = Joi.object({
@@ -50,14 +57,20 @@ const loginUserSchema = Joi.object({
         .min(6),
     email: Joi.string()
         .required()
-        .pattern(emailRegExp),
+        .pattern(emailRegExp)
+})
+
+const sendVerificationUserSchema = Joi.object({
+    email: Joi.string()
+        .required()
+        .pattern(emailRegExp)
 })
 
 const changeSubSchema = Joi.object({
     subscription: Joi.string().required().valid('starter', 'pro', 'business'),
 })
 
-const schemas = { addUserSchema, loginUserSchema, changeSubSchema }
+const schemas = { addUserSchema, loginUserSchema, changeSubSchema, sendVerificationUserSchema }
 
 const User = mongoose.model('user', userSchema)
 
