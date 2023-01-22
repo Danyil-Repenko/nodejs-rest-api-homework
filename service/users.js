@@ -2,23 +2,27 @@ const { User } = require('../shemas/user');
 const bcrypt = require('bcryptjs');
 const dotenv = require("dotenv");
 const jwt = require('jsonwebtoken');
+const sendMail = require('../helpers/verification')
 
 dotenv.config();
 const { SECRET } = process.env;
 
-const register = async ({ email, password, avatarURL }) => {
+const register = async (fields) => {
+    const { email } = fields
     const alreadyUser = await User.findOne({ email })
     if (alreadyUser) {
         return null
     }
 
-    const saltedPassword = await bcrypt.hash(password, 10)
-    return await User.create({ email, password: saltedPassword, avatarURL })
+    const saltedPassword = await bcrypt.hash(fields.password, 10)
+    return await User.create({ ...fields, password: saltedPassword })
 }
 
 const login = async ({ email, password }) => {
     const isUser = await User.findOne({ email })
-
+    if (isUser.verify === false) {
+        return { message: "Unverified" }
+    }
     const correctPassword = await bcrypt.compare(password, isUser.password)
     if (!isUser || !correctPassword) {
         return null
@@ -51,11 +55,38 @@ const updateAvatar = async (userId, avatar) => {
     return newAva
 }
 
+const verify = async (token) => {
+    const user = await User.findOne({ verificationToken: token })
+    if (!user) {
+        return null
+    } else if (user.verify === true) {
+        return { message: "Already verified" }
+    }
+    const verifiedUser = await User.findByIdAndUpdate(user._id, { $set: { verify: true, verificationToken: '' } })
+    return verifiedUser
+}
+
+const sendVerification = async (email) => {
+    const user = await User.findOne({ email })
+    if (!user) {
+        return null
+    } else if (user.verify === true) {
+        return { message: "Already verified" }
+    }
+    const message = {
+        to: email, subject: "Verify your email", html: `<a href="http:localhost:300/api/users/verify/${user.verificationToken}" turget="_blank">Click this link to verify</a>`
+    }
+    await sendMail(message)
+    return true
+}
+
 module.exports = {
     register,
     login,
     logout,
     getCurrent,
     changeSub,
-    updateAvatar
+    updateAvatar,
+    verify,
+    sendVerification
 }

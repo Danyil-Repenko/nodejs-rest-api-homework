@@ -8,6 +8,10 @@ const router = express.Router()
 
 router.post('/register', validate(schemas.addUserSchema), upload.single('avatar'), userContrl.register)
 
+router.get('/verify/:verificationToken', userContrl.verify)
+
+router.post('/verify', validate(schemas.sendVerificationUserSchema), userContrl.sendVerification)
+
 router.get('/login', validate(schemas.loginUserSchema), userContrl.login)
 
 router.post('/logout', authorized, userContrl.logout)

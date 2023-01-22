@@ -2,7 +2,9 @@ const { userFuncs } = require('../service')
 const gravatar = require('gravatar')
 const path = require('path')
 const fs = require('fs').promises
-const Jimp = require('jimp');
+const uniqid = require('uniqid');
+const adjust = require('../helpers/adjustImage');
+const sendMail = require("../helpers/verification")
 
 const register = async (req, res, next) => {
     let avatarURL = null
@@ -13,30 +15,26 @@ const register = async (req, res, next) => {
             avatarURL = gravatar.url(email)
         } else {
             const { path: tempDir, filename } = req.file
-            await Jimp.read(tempDir)
-                .then(async image => {
-                    await image
-                        .resize(250, 250)
-                        .writeAsync(tempDir)
-                })
-                .catch(err => {
-                    next(err);
-                });
+            await adjust(tempDir)
             const publicDir = path.join(__dirname, '..', 'public', 'avatars', filename)
             await fs.rename(tempDir, publicDir)
             avatarURL = path.join('avatars', filename)
         }
-        console.log(avatarURL)
-
-        const newUser = await userFuncs.register({ email, password, avatarURL })
+        const verificationToken = uniqid()
+        const newUser = await userFuncs.register({ email, password, avatarURL, verificationToken })
 
         if (newUser) {
+            const message = {
+                to: email, subject: "Verify your email", html: `<a href="http:localhost:300/api/users/verify/${verificationToken}" turget="_blank">Click this link to verify</a>`
+            }
+            await sendMail(message)
             res.status(201).json({
                 message: "User created",
                 user: {
                     email: newUser.email,
                     subscription: newUser.subscription,
-                    avatarURL: newUser.avatarURL
+                    avatarURL: newUser.avatarURL,
+                    verify: newUser.verify
                 }
             })
         } else {
@@ -51,12 +49,15 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
     try {
-        console.log(req.body)
         const { email, password } = req.body;
 
         const loginUser = await userFuncs.login({ email, password })
 
-        if (loginUser) {
+        if (!loginUser) {
+            res.status(401).json({ message: 'Email or password is wrong' })
+        } else if (loginUser.message) {
+            res.status(400).json({ message: 'Unverified' })
+        } else {
             res.json({
                 message: "User loged in",
                 token: loginUser.token,
@@ -66,8 +67,6 @@ const login = async (req, res, next) => {
                     avatarURL: loginUser.avatarURL
                 }
             })
-        } else {
-            res.status(401).json({ message: 'Email or password is wrong' })
         }
 
     } catch (err) {
@@ -139,15 +138,8 @@ const updateAvatar = async (req, res, next) => {
             return res.status(400).json({ message: 'Missing required file' })
         }
         const { path: tempDir, filename } = req.file
-        await Jimp.read(tempDir)
-            .then(async image => {
-                await image
-                    .resize(250, 250)
-                    .writeAsync(tempDir)
-            })
-            .catch(err => {
-                next(err);
-            });
+        await adjust(tempDir)
+
         const uniqueFilename = `${_id}_${filename}`
         const publicDir = path.join(__dirname, '..', 'public', 'avatars', uniqueFilename)
         await fs.rename(tempDir, publicDir)
@@ -163,4 +155,39 @@ const updateAvatar = async (req, res, next) => {
         next(err)
     }
 }
-module.exports = { register, login, logout, current, newSub, updateAvatar }
+
+const verify = async (req, res, next) => {
+    try {
+        const { verificationToken } = req.params
+
+        const verifiedUser = await userFuncs.verify(verificationToken)
+        if (!verifiedUser) {
+            res.status(404).json({ message: 'Not found' })
+        } else if (verifiedUser.message) {
+            res.status(400).json({ message: 'Verification has already been passed' })
+        } else {
+            res.json({ message: 'Verification successful' })
+        }
+    } catch (err) {
+        next(err)
+    }
+}
+
+const sendVerification = async (req, res, next) => {
+    try {
+        const { email } = req.body
+
+        const verifiedUser = await userFuncs.sendVerification(email)
+        if (!verifiedUser) {
+            res.status(404).json({ message: 'Not found' })
+        } else if (verifiedUser.message) {
+            res.status(400).json({ message: 'Verification has already been passed' })
+        } else {
+            res.json({ message: 'Verification email sent' })
+        }
+    } catch (err) {
+        next(err)
+    }
+}
+
+module.exports = { register, login, logout, current, newSub, updateAvatar, verify, sendVerification }
